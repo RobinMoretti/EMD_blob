@@ -3,7 +3,7 @@ class BodyPart{
 	float size;
 
 	BodyPart(PVector _position, float _size){
-		position = _position;
+		position = _position.copy();
 		size = _size;
 	} 
 

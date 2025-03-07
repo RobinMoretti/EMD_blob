@@ -1,32 +1,28 @@
 class Blob{
 	PVector position, velocity, acceleration;
+	int id;
 	ArrayList<BodyPart> bodyParts = new ArrayList<BodyPart>();
-	ArrayList<Blob> children = new ArrayList<Blob>();
-
 
 
 	float maxSpeed = 1;
 	float maxForce = 0.1;
 	float minDistance = 25;
-	float perceptionRadius = 30;
+	float perceptionRadius = 50;
 
-	Blob(){
-		position = new PVector();
-		velocity = new PVector();
+	Blob(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
+		id = blobs.size();
+		position = _position;
+		velocity = _velocity;
+
 		acceleration = new PVector();
 
-		position.x = width/2;
-		position.y = height/2;
-		
-		// go in a random direction
-		velocity.x = random(-1, 1);
-		velocity.y = random(-1, 1);
-
-		//add few body part randomly around my position
-		for (int i = 0; i < random(2, 5); i++) {
+		if(_parentBodyPart != null){
+			bodyParts.add(new BodyPart(_parentBodyPart.position.copy(), random(5, 10)));
+		}
+		else{
 			PVector bodyPartPosition = new PVector();
-			bodyPartPosition.x = position.x + random(-50, 50);
-			bodyPartPosition.y = position.y + random(-50, 50);
+			bodyPartPosition.x = position.x + random(-10, 10);
+			bodyPartPosition.y = position.y + random(-10, 10);
 			bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
 		}
 	} 
@@ -41,31 +37,51 @@ class Blob{
 		
 		position.add(velocity);
 
-		draw();
-
 		for (BodyPart bodyPart : bodyParts) {
 			bodyPart.draw();
 		}
 	}
 
-		void repulsion(){
+	ArrayList<BodyPart> getAllBlobsBodyParts(){
+		ArrayList<BodyPart> allBodyParts = new ArrayList<BodyPart>();
+
+		for (Blob blob : blobs) {
+			if(blob != this && blob.bodyParts.size() > 3){
+				allBodyParts.addAll(blob.bodyParts);
+				allBodyParts.add(new BodyPart(blob.position.copy(), random(5, 10)));
+			}
+			else{
+				allBodyParts.addAll(bodyParts);
+			}
+		}
+
+		return allBodyParts;
+	}
+
+	void repulsion(){
+		ArrayList<BodyPart> allBodyParts = getAllBlobsBodyParts();
+
 		PVector repulsion = new PVector(0, 0);
 		int count = 0;
+		int bodyPartCount = 0;
 		
 		// Body parts repulsion
-		for (BodyPart bodyPart : bodyParts) {
+		for (BodyPart bodyPart : allBodyParts) {
 			float distance = PVector.dist(position, bodyPart.position);
 			
 			if (distance < perceptionRadius && distance > 0) { 
+				line(position.x, position.y, bodyPart.position.x, bodyPart.position.y);	
 				PVector diff = PVector.sub(position, bodyPart.position);
 				diff.normalize();
 				
-				float weight = 1.0 / (distance * distance);
+				float weight = 3.0 / (distance * distance);
 				diff.mult(weight);
 				
 				repulsion.add(diff);
 				count++;
 			}
+
+			bodyPartCount++;
 		}
 		
 		if (count > 0) {
@@ -109,6 +125,7 @@ class Blob{
 	}
 
 	void draw(){
+        text(id, position.x, position.y);
 		fill(0, 100);
 		ellipse(position.x, position.y, 10, 10);
 
@@ -116,7 +133,6 @@ class Blob{
 		noFill();
 		stroke(0, 100);
 		ellipse(position.x, position.y, perceptionRadius, perceptionRadius);
-
 
 		// draw a line between all body part in order
 		for (int i = 0; i < bodyParts.size() - 1; i++) {
@@ -131,20 +147,36 @@ class Blob{
 		float distance = PVector.dist(position, lastBodyPart.position);
 		
 		if(distance > minDistance){
-			// add a body just few pixel behind me
-			PVector bodyPartPosition = new PVector();
-			bodyPartPosition.x = position.x - velocity.x * 5;
-			bodyPartPosition.y = position.y - velocity.y * 5;
-			bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
+			if(bodyParts.size() % 10 == 0){
+				// First, calculate a perpendicular direction to velocity
+				PVector perpDirection = new PVector(velocity.y, -velocity.x);
+				perpDirection.normalize();
+				
+				// Create child position perpendicular to the parent's direction
+				// instead of behind the parent
+				PVector newBlobPosition = new PVector();
+				newBlobPosition.x = position.x + perpDirection.x * 20; // Move perpendicular
+				newBlobPosition.y = position.y + perpDirection.y * 20;
+				
+				// Add a body part at this new position
+				PVector bodyPartPosition = new PVector();
+				bodyPartPosition.x = position.x - velocity.x * 5;
+				bodyPartPosition.y = position.y - velocity.y * 5;
+				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
 
-			if(bodyParts.size() > 10){
-				// children.add(new Blob());
+				// Create a velocity in the same perpendicular direction
+				PVector childVelocity = perpDirection.copy();
+				childVelocity.mult(2); // Speed factor
+
+				blobs.add(new Blob(newBlobPosition, childVelocity, lastBodyPart));
 			}
-		}
-
-
-		for (Blob child : children) {
-			child.update();
+			else{
+				// add a body just few pixel behind me
+				PVector bodyPartPosition = new PVector();
+				bodyPartPosition.x = position.x - velocity.x * 5;
+				bodyPartPosition.y = position.y - velocity.y * 5;
+				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
+			}
 		}
 	}
 
