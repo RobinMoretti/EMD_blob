@@ -18,6 +18,8 @@ class Blob{
 	float size = 10;
 
 	Blob(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
+		size = random(minSize, maxSize);
+
 		id = blobs.size();
 		position = _position;
 		velocity = _velocity;

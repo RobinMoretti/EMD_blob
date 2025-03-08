@@ -10,7 +10,7 @@ boolean usePixelEffect = true;
 PFont interTight;
 
 void setup() {
-    size(1024, 1024);
+    size(800, 1200);
     background(255);
 
     setupCrunchyEffect();
@@ -18,11 +18,11 @@ void setup() {
     fill(0);
     interTight = createFont("/Fonts/InterTight-Bold.ttf", 128);
 
-    // textFont(interTight, 300);
-    // textSize(300);
-    // text("R", width/2 - 90, height/2 + 100);
+    textFont(interTight, 300);
+    textSize(250);
+    text("BLOB", width/2 - 300, height/2 + 100);
     
-    ellipse(width/2, height/2, width-100, height-100);	
+    // ellipse(width/2, height/2, width-100, height-100);	
 }
 
 long lastTime = 0;
@@ -48,6 +48,7 @@ void draw() {
     // }
 
     updateCrunchyEffect();
+	saveFrame("output/####.png");
 }
 
 void mousePressed() {

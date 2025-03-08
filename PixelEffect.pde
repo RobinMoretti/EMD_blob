@@ -5,7 +5,7 @@ float[] velocityField;
 float crunchFactor = 0.001;  
 float turbulence = 0.002; 
 float persistence = 0.001; 
-int blockSize = 1; 
+int blockSize = 10; 
 float influenceRadius = 10; 
 
 void setupCrunchyEffect() {
@@ -38,6 +38,7 @@ void updateCrunchyEffect() {
 		int fieldIndex = ((x/blockSize) + (y/blockSize) * (width/blockSize)) * 2;
 		
 		boolean withinInfluence = false;
+		
 		float maxPower = 0;
 		float netVelX = 0;
 		float netVelY = 0;
@@ -65,14 +66,14 @@ void updateCrunchyEffect() {
 			velocityField[fieldIndex+1] += netVelY;
 			
 			if (random(1) < 0.05) {
-			velocityField[fieldIndex] = random(-crunchFactor, crunchFactor);
-			velocityField[fieldIndex+1] = random(-crunchFactor, crunchFactor);
+				velocityField[fieldIndex] = random(-crunchFactor, crunchFactor);
+				velocityField[fieldIndex+1] = random(-crunchFactor, crunchFactor);
 			}
 		} else {
-			velocityField[fieldIndex] *= 0.1;
-			velocityField[fieldIndex+1] *= 0.1;
-			displacementField[fieldIndex] *= 0.1;
-			displacementField[fieldIndex+1] *= 0.1;
+			velocityField[fieldIndex] *= 1.001;
+			velocityField[fieldIndex+1] *= 1.001;
+			displacementField[fieldIndex] *= 1.001;
+			displacementField[fieldIndex+1] *= 1.001;
 		}
 		
 		displacementField[fieldIndex] += velocityField[fieldIndex];
@@ -97,23 +98,23 @@ void updateCrunchyEffect() {
 		
 		for (int bx = 0; bx < blockSize; bx++) {
 			for (int by = 0; by < blockSize; by++) {
-			if (x+bx < width && y+by < height) {
-				int targetLoc = (x+bx) + (y+by) * width;
-				int sourceLoc = (sourceX+bx) + (sourceY+by) * width;
-				
-				if (sourceLoc >= 0 && sourceLoc < buffer.pixels.length) {
-				color c = buffer.pixels[sourceLoc];
-				
-				if (withinInfluence && random(1) < 0.01) { // Occasional color glitches
-					int r = (int)red(c) ^ (int)random(50);
-					int g = (int)green(c) ^ (int)random(50);
-					int b = (int)blue(c) ^ (int)random(50);
-					c = color(r, g, b);
+				if (x+bx < width && y+by < height) {
+					int targetLoc = (x+bx) + (y+by) * width;
+					int sourceLoc = (sourceX+bx) + (sourceY+by) * width;
+					
+					if (sourceLoc >= 0 && sourceLoc < buffer.pixels.length) {
+						color c = buffer.pixels[sourceLoc];
+						
+						if (withinInfluence && random(1) < 0.01) { // Occasional color glitches
+							int r = (int)red(c) ^ (int)random(50);
+							int g = (int)green(c) ^ (int)random(50);
+							int b = (int)blue(c) ^ (int)random(50);
+							c = color(r, g, b);
+						}
+					
+						buffer.pixels[targetLoc] = c;
+					}
 				}
-				
-				buffer.pixels[targetLoc] = c;
-				}
-			}
 			}
 		}
 		}
