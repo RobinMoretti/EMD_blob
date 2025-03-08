@@ -13,9 +13,9 @@ class Blob{
 
 	int nextChildSpawnCount = 4;
 
-	float maxSize = 100;
-	float minSize = 10;
-	float size = 50;
+	float maxSize = 20;
+	float minSize = 2;
+	float size = 10;
 
 	Blob(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
 		id = blobs.size();
@@ -39,9 +39,8 @@ class Blob{
 
 	void update(){
 		// change slowly the size of the blob with randomness
-		size += random(-0.02, 0.02);
+		size += random(-1, 1);
 		size = constrain(size, minSize, maxSize);
-
 
 		repulsion();
 		
@@ -155,7 +154,7 @@ class Blob{
 			
 			if (distance < perceptionRadius && distance > 0) { 
 				stroke(0, 10);
-				line(position.x, position.y, bodyPart.position.x, bodyPart.position.y);	
+				// line(position.x, position.y, bodyPart.position.x, bodyPart.position.y);	
 				PVector diff = PVector.sub(position, bodyPart.position);
 				diff.normalize();
 				

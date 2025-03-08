@@ -15,7 +15,7 @@ void setup() {
 
     textFont(interTight, 300);
     textSize(300);
-    text("R", width/2 - 90, height/2 + 50);	
+    text("R", width/2 - 90, height/2 + 100);	
 }
 
 void draw() {
@@ -62,10 +62,11 @@ void mousePressed() {
         bodyPartPosition.y = mouseY;
         otherBodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
     }
+}
 
-    // if key p was pressed
+void keyPressed() {
     if (key == 'p') {
-        // save the current frame
+        scale(2);
         saveFrame("output/####.png");
     }
 }

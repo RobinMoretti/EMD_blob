@@ -2,9 +2,9 @@ PImage buffer;
 PImage original;
 float[] displacementField;
 float[] velocityField;
-float crunchFactor = 0.2;  
-float turbulence = 0.2; 
-float persistence = 0.1; 
+float crunchFactor = 0.01;  
+float turbulence = 0.02; 
+float persistence = 0.01; 
 int blockSize = 1; 
 float influenceRadius = 10; 
 
@@ -43,13 +43,14 @@ void updateCrunchyEffect() {
 		float netVelY = 0;
 		
 		for (int i = 0; i < blobs.size(); i++) {
+			if(blobs.get(i).lifeSpan <= 0) continue;
 			float dx = x - blobs.get(i).position.x;
 			float dy = y - blobs.get(i).position.y;
 			float dist = sqrt(dx*dx + dy*dy);
 			
-			if (dist < influenceRadius) {
+			if (dist < blobs.get(i).size) {
 				withinInfluence = true;
-				float power = pow(1 - dist/influenceRadius, 2) * mouseStrength;
+				float power = pow(1 - dist/blobs.get(i).size, 2) * mouseStrength;
 				maxPower = max(maxPower, power);
 				
 				float angle = noise(x * 0.01, y * 0.01, frameCount * 0.01 + i) * TWO_PI;
@@ -131,12 +132,13 @@ void updateCrunchyEffect() {
       float lineEndX = 0;
       
       for (int i = 0; i < blobs.size(); i++) {
-        float scanlineRadius = influenceRadius * 1.2;
-        if (abs(y - blobs.get(i).position.y) < scanlineRadius) {
-          drawLine = true;
-          lineStartX = min(lineStartX, max(0, blobs.get(i).position.x - scanlineRadius));
-          lineEndX = max(lineEndX, min(width, blobs.get(i).position.x + scanlineRadius));
-        }
+		if(blobs.get(i).lifeSpan <= 0) continue;
+		float scanlineRadius = blobs.get(i).size * 1.2;
+		if (abs(y - blobs.get(i).position.y) < scanlineRadius) {
+			drawLine = true;
+			lineStartX = min(lineStartX, max(0, blobs.get(i).position.x - scanlineRadius));
+			lineEndX = max(lineEndX, min(width, blobs.get(i).position.x + scanlineRadius));
+		}
       }
       
       if (drawLine) {
