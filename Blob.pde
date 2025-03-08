@@ -11,7 +11,11 @@ class Blob{
 	float maxLifeSpan = 1000;
 	float lifeSpan;
 
-	int nextChildSpawnCount = 5;
+	int nextChildSpawnCount = 4;
+
+	float maxSize = 100;
+	float minSize = 10;
+	float size = 50;
 
 	Blob(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
 		id = blobs.size();
@@ -34,6 +38,11 @@ class Blob{
 	} 
 
 	void update(){
+		// change slowly the size of the blob with randomness
+		size += random(-0.02, 0.02);
+		size = constrain(size, minSize, maxSize);
+
+
 		repulsion();
 		
 		// Add some randomness to the velocity
@@ -51,7 +60,66 @@ class Blob{
 		}
 
 		for (BodyPart bodyPart : bodyParts) {
-			bodyPart.draw();
+			// bodyPart.draw();
+		}
+
+		
+		BodyPart lastBodyPart = bodyParts.get(bodyParts.size() - 1);
+		float distance = PVector.dist(position, lastBodyPart.position);
+		
+		if(distance > minDistance){
+			if(bodyParts.size() % nextChildSpawnCount == 0){
+				nextChildSpawnCount = (int)random(4, 9);
+
+				// check first if the blob have a minum distance with other blobs
+				boolean canSpawn = true;
+				for (Blob blob : blobs) {
+					if(blob != this){
+						float distanceWithOtherBlob = PVector.dist(position, blob.position);
+						if(distanceWithOtherBlob < minDistance * 3){
+							canSpawn = false;
+							break;
+						}
+					}
+				}
+
+				if(!canSpawn){
+					return;
+				}
+
+				// First, calculate a perpendicular direction to velocity
+				PVector perpDirection = new PVector(velocity.y, -velocity.x);
+				perpDirection.normalize();
+				
+				// Create child position perpendicular to the parent's direction
+				// instead of behind the parent
+				PVector newBlobPosition = new PVector();
+				newBlobPosition.x = position.x + perpDirection.x * 20; // Move perpendicular
+				newBlobPosition.y = position.y + perpDirection.y * 20;
+				
+				// Add a body part at this new position
+				PVector bodyPartPosition = new PVector();
+				bodyPartPosition.x = position.x - velocity.x * 5;
+				bodyPartPosition.y = position.y - velocity.y * 5;
+				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
+
+				// Create a velocity in the same perpendicular direction
+				PVector childVelocity = perpDirection.copy();
+				childVelocity.mult(2); // Speed factor
+
+				Blob newBlob = new Blob(newBlobPosition, childVelocity, lastBodyPart);
+				blobs.add(newBlob);
+				newBlob.maxSpeed = maxSpeed - 0.1;
+				newBlob.maxForce = maxForce - 0.01;		
+				newBlob.maxLifeSpan = maxLifeSpan - 100;		
+			}
+			else{
+				// add a body just few pixel behind me
+				PVector bodyPartPosition = new PVector();
+				bodyPartPosition.x = position.x - velocity.x * 5;
+				bodyPartPosition.y = position.y - velocity.y * 5;
+				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
+			}
 		}
 
 	}
@@ -142,7 +210,6 @@ class Blob{
 	}
 
 	void draw(){
-        text(id, position.x, position.y);
 		fill(0, 100);
 		ellipse(position.x, position.y, 10, 10);
 
@@ -160,63 +227,6 @@ class Blob{
 
 		BodyPart lastBodyPart = bodyParts.get(bodyParts.size() - 1);
 		line(position.x, position.y, lastBodyPart.position.x, lastBodyPart.position.y);
-
-		float distance = PVector.dist(position, lastBodyPart.position);
-		
-		if(distance > minDistance){
-			if(bodyParts.size() % nextChildSpawnCount == 0){
-				nextChildSpawnCount = (int)random(6, 13);
-
-				// check first if the blob have a minum distance with other blobs
-				boolean canSpawn = true;
-				for (Blob blob : blobs) {
-					if(blob != this){
-						float distanceWithOtherBlob = PVector.dist(position, blob.position);
-						if(distanceWithOtherBlob < minDistance * 3){
-							canSpawn = false;
-							break;
-						}
-					}
-				}
-
-				if(!canSpawn){
-					return;
-				}
-
-				// First, calculate a perpendicular direction to velocity
-				PVector perpDirection = new PVector(velocity.y, -velocity.x);
-				perpDirection.normalize();
-				
-				// Create child position perpendicular to the parent's direction
-				// instead of behind the parent
-				PVector newBlobPosition = new PVector();
-				newBlobPosition.x = position.x + perpDirection.x * 20; // Move perpendicular
-				newBlobPosition.y = position.y + perpDirection.y * 20;
-				
-				// Add a body part at this new position
-				PVector bodyPartPosition = new PVector();
-				bodyPartPosition.x = position.x - velocity.x * 5;
-				bodyPartPosition.y = position.y - velocity.y * 5;
-				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
-
-				// Create a velocity in the same perpendicular direction
-				PVector childVelocity = perpDirection.copy();
-				childVelocity.mult(2); // Speed factor
-
-				Blob newBlob = new Blob(newBlobPosition, childVelocity, lastBodyPart);
-				blobs.add(newBlob);
-				newBlob.maxSpeed = maxSpeed - 0.1;
-				newBlob.maxForce = maxForce - 0.01;		
-				newBlob.maxLifeSpan = maxLifeSpan - 100;		
-			}
-			else{
-				// add a body just few pixel behind me
-				PVector bodyPartPosition = new PVector();
-				bodyPartPosition.x = position.x - velocity.x * 5;
-				bodyPartPosition.y = position.y - velocity.y * 5;
-				bodyParts.add(new BodyPart(bodyPartPosition, random(5, 10)));
-			}
-		}
 	}
 
 }
