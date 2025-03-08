@@ -121,24 +121,34 @@ class Blob{
 			}
 		}
 
+		// In Blob.update(), consider limiting the max number of bodyParts
+		if (bodyParts.size() > 50) {
+			bodyParts.remove(0); // Remove oldest bodyPart
+		}
+
 	}
 
 	ArrayList<BodyPart> getAllBlobsBodyParts(){
-		ArrayList<BodyPart> allBodyParts = new ArrayList<BodyPart>();
-
-		allBodyParts.addAll(otherBodyParts);
-		
-		for (Blob blob : blobs) {
-			if(blob != this && blob.bodyParts.size() > 3){
-				allBodyParts.addAll(blob.bodyParts);
-				allBodyParts.add(new BodyPart(blob.position.copy(), random(5, 10)));
-			}
-			else{
-				allBodyParts.addAll(bodyParts);
+		ArrayList<BodyPart> nearbyBodyParts = new ArrayList<BodyPart>();
+  
+		// Get nearby cells only
+		int cellX = floor(position.x / cellSize);
+		int cellY = floor(position.y / cellSize);
+  
+		// Check current cell and 8 surrounding cells
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				int checkCellX = cellX + i;
+				int checkCellY = cellY + j;
+				int cellKey = checkCellX * 1000 + checkCellY;
+      
+				if (grid.containsKey(cellKey)) {
+					nearbyBodyParts.addAll(grid.get(cellKey));
+				}
 			}
 		}
-
-		return allBodyParts;
+  
+		return nearbyBodyParts;
 	}
 
 	void repulsion(){
@@ -208,24 +218,31 @@ class Blob{
 		velocity.limit(maxSpeed);
 	}
 
-	void draw(){
-		fill(0, 100);
-		ellipse(position.x, position.y, 10, 10);
-
+	void draw(PGraphics pg) {
+		if (pg == null) pg = g; // Use main canvas if no PGraphics provided
+		
+		pg.fill(0, 100);
+		pg.ellipse(position.x, position.y, 10, 10);
+	
 		// draw the perception radius
-		noFill();
-		stroke(0, 100);
-		ellipse(position.x, position.y, perceptionRadius, perceptionRadius);
-
+		pg.noFill();
+		pg.stroke(0, 100);
+		pg.ellipse(position.x, position.y, perceptionRadius, perceptionRadius);
+	
 		// draw a line between all body part in order
 		for (int i = 0; i < bodyParts.size() - 1; i++) {
 			BodyPart bodyPart1 = bodyParts.get(i);
 			BodyPart bodyPart2 = bodyParts.get(i + 1);
-			line(bodyPart1.position.x, bodyPart1.position.y, bodyPart2.position.x, bodyPart2.position.y);
+			pg.line(bodyPart1.position.x, bodyPart1.position.y, bodyPart2.position.x, bodyPart2.position.y);
 		}
-
-		BodyPart lastBodyPart = bodyParts.get(bodyParts.size() - 1);
-		line(position.x, position.y, lastBodyPart.position.x, lastBodyPart.position.y);
+	
+		if (bodyParts.size() > 0) {
+			BodyPart lastBodyPart = bodyParts.get(bodyParts.size() - 1);
+			pg.line(position.x, position.y, lastBodyPart.position.x, lastBodyPart.position.y);
+		}
 	}
-
+	
+	void draw() {
+		draw(null);
+	}
 }

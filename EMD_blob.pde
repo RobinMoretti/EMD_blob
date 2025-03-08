@@ -1,11 +1,13 @@
+import java.util.HashMap;
 
 ArrayList<Blob> blobs = new ArrayList<Blob>();
 ArrayList<BodyPart> otherBodyParts = new ArrayList<BodyPart>();
+HashMap<Integer, ArrayList<BodyPart>> grid = new HashMap<Integer, ArrayList<BodyPart>>();
+int cellSize = 100; // Size of each spatial grid cell
 int opacityCount = 0;
 boolean usePixelEffect = true;
 
 PFont interTight;
-
 
 void setup() {
     size(1024, 1024);
@@ -23,21 +25,27 @@ void setup() {
     ellipse(width/2, height/2, width-100, height-100);	
 }
 
+long lastTime = 0;
+final int FRAME_SKIP = 2; // Only update physics every X frames
+
 void draw() {
-    opacityCount++;
-
-    if(opacityCount > 10){
-        opacityCount = 0;
-        fill(255, 255, 255, 10);
+    // Only update physics every FRAME_SKIP frames
+    if (frameCount % FRAME_SKIP == 0) {
+        updateSpatialGrid();
+        
+        for(int i = 0; i < blobs.size(); i++){
+            blobs.get(i).update();
+        }
     }
+    
+    // Always draw
+    // for(int i = 0; i < blobs.size(); i++){
+    //     blobs.get(i).draw();
+    // }
 
-    for(int i = 0; i < blobs.size(); i++){
-        blobs.get(i).update();
-    }
-
-    for(int i = 0; i < otherBodyParts.size(); i++){
-        otherBodyParts.get(i).draw();
-    }
+    // for(int i = 0; i < otherBodyParts.size(); i++){
+    //     otherBodyParts.get(i).draw();
+    // }
 
     updateCrunchyEffect();
 }
@@ -71,4 +79,34 @@ void keyPressed() {
         scale(2);
         saveFrame("output/####.tiff");
     }
+}
+
+void updateSpatialGrid() {
+  grid.clear();
+  
+  // Add otherBodyParts to grid
+  for (BodyPart bp : otherBodyParts) {
+    int cellX = floor(bp.position.x / cellSize);
+    int cellY = floor(bp.position.y / cellSize);
+    int cellKey = cellX * 1000 + cellY; // Simple hash for the cell
+    
+    if (!grid.containsKey(cellKey)) {
+      grid.put(cellKey, new ArrayList<BodyPart>());
+    }
+    grid.get(cellKey).add(bp);
+  }
+  
+  // Add blob bodyParts to grid
+  for (Blob blob : blobs) {
+    for (BodyPart bp : blob.bodyParts) {
+      int cellX = floor(bp.position.x / cellSize);
+      int cellY = floor(bp.position.y / cellSize);
+      int cellKey = cellX * 1000 + cellY;
+      
+      if (!grid.containsKey(cellKey)) {
+        grid.put(cellKey, new ArrayList<BodyPart>());
+      }
+      grid.get(cellKey).add(bp);
+    }
+  }
 }
