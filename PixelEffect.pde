@@ -2,9 +2,9 @@ PImage buffer;
 PImage original;
 float[] displacementField;
 float[] velocityField;
-float crunchFactor = 0.01;  
-float turbulence = 0.02; 
-float persistence = 0.01; 
+float crunchFactor = 0.001;  
+float turbulence = 0.002; 
+float persistence = 0.001; 
 int blockSize = 1; 
 float influenceRadius = 10; 
 
@@ -69,10 +69,10 @@ void updateCrunchyEffect() {
 			velocityField[fieldIndex+1] = random(-crunchFactor, crunchFactor);
 			}
 		} else {
-			velocityField[fieldIndex] *= 0.8;
-			velocityField[fieldIndex+1] *= 0.8;
-			displacementField[fieldIndex] *= 0.8;
-			displacementField[fieldIndex+1] *= 0.8;
+			velocityField[fieldIndex] *= 0.1;
+			velocityField[fieldIndex+1] *= 0.1;
+			displacementField[fieldIndex] *= 0.1;
+			displacementField[fieldIndex+1] *= 0.1;
 		}
 		
 		displacementField[fieldIndex] += velocityField[fieldIndex];

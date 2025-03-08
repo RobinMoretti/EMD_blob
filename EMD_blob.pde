@@ -5,17 +5,22 @@ int opacityCount = 0;
 boolean usePixelEffect = true;
 
 PFont interTight;
+
+
 void setup() {
-    size(512, 512);
+    size(1024, 1024);
     background(255);
+
     setupCrunchyEffect();
 
     fill(0);
     interTight = createFont("/Fonts/InterTight-Bold.ttf", 128);
 
-    textFont(interTight, 300);
-    textSize(300);
-    text("R", width/2 - 90, height/2 + 100);	
+    // textFont(interTight, 300);
+    // textSize(300);
+    // text("R", width/2 - 90, height/2 + 100);
+    
+    ellipse(width/2, height/2, width-100, height-100);	
 }
 
 void draw() {
@@ -23,14 +28,11 @@ void draw() {
 
     if(opacityCount > 10){
         opacityCount = 0;
-        // background(255, 255, 255, 0.5);
         fill(255, 255, 255, 10);
-        // rect(0, 0, width, height);
     }
 
     for(int i = 0; i < blobs.size(); i++){
         blobs.get(i).update();
-        // blobs.get(i).draw();
     }
 
     for(int i = 0; i < otherBodyParts.size(); i++){
@@ -67,6 +69,6 @@ void mousePressed() {
 void keyPressed() {
     if (key == 'p') {
         scale(2);
-        saveFrame("output/####.png");
+        saveFrame("output/####.tiff");
     }
 }
