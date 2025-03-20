@@ -5,7 +5,7 @@ float[] velocityField;
 float crunchFactor = 0.001;  
 float turbulence = 0.002; 
 float persistence = 0.001; 
-int blockSize = 10; 
+int blockSize = 4; 
 float influenceRadius = 10; 
 
 void setupCrunchyEffect() {
@@ -126,7 +126,7 @@ void updateCrunchyEffect() {
   
   // Add scanlines for extra crunch - only near influence points
   if (frameCount % 2 == 0) {  // Every other frame
-    stroke(0, 20);
+    stroke(0, 5);
     for (int y = 0; y < height; y += 3) {
       boolean drawLine = false;
       float lineStartX = width;
