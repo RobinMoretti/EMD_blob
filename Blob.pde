@@ -1,4 +1,4 @@
-class Blob{
+class BlobObject{
 	PVector position, velocity, acceleration;
 	int id;
 	ArrayList<BodyPart> bodyParts = new ArrayList<BodyPart>();
@@ -17,7 +17,7 @@ class Blob{
 	float minSize = 2;
 	float size = 10;
 
-	Blob(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
+	BlobObject(PVector _position, PVector _velocity, BodyPart _parentBodyPart){
 		size = random(minSize, maxSize);
 
 		id = blobs.size();
@@ -74,7 +74,7 @@ class Blob{
 
 				// check first if the blob have a minum distance with other blobs
 				boolean canSpawn = true;
-				for (Blob blob : blobs) {
+				for (BlobObject blob : blobs) {
 					if(blob != this){
 						float distanceWithOtherBlob = PVector.dist(position, blob.position);
 						if(distanceWithOtherBlob < minDistance * 3){
@@ -108,7 +108,7 @@ class Blob{
 				PVector childVelocity = perpDirection.copy();
 				childVelocity.mult(2); // Speed factor
 
-				Blob newBlob = new Blob(newBlobPosition, childVelocity, lastBodyPart);
+				BlobObject newBlob = new BlobObject(newBlobPosition, childVelocity, lastBodyPart);
 				blobs.add(newBlob);
 				newBlob.maxSpeed = maxSpeed - 0.1;
 				newBlob.maxForce = maxForce - 0.01;		

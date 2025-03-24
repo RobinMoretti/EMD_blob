@@ -1,6 +1,6 @@
 import java.util.HashMap;
 
-ArrayList<Blob> blobs = new ArrayList<Blob>();
+ArrayList<BlobObject> blobs = new ArrayList<BlobObject>();
 ArrayList<BodyPart> otherBodyParts = new ArrayList<BodyPart>();
 HashMap<Integer, ArrayList<BodyPart>> grid = new HashMap<Integer, ArrayList<BodyPart>>();
 int cellSize = 100; // Size of each spatial grid cell
@@ -20,7 +20,7 @@ void setup() {
 
     textFont(interTight, 300);
     textSize(250);
-    text("BLOB", width/2 - 300, height/2 + 100);
+    text("Un titre incroyable", width/2 - 300, height/2 + 100);
     
     // ellipse(width/2, height/2, width-100, height-100);	
 }
@@ -62,7 +62,7 @@ void mousePressed() {
         PVector blobVelocity = PVector.random2D();
         blobVelocity.mult(2);
 
-        blobs.add(new Blob(blobPosition, blobVelocity, null));
+        blobs.add(new BlobObject(blobPosition, blobVelocity, null));
         return;
     }
     
@@ -98,7 +98,7 @@ void updateSpatialGrid() {
   }
   
   // Add blob bodyParts to grid
-  for (Blob blob : blobs) {
+  for (BlobObject blob : blobs) {
     for (BodyPart bp : blob.bodyParts) {
       int cellX = floor(bp.position.x / cellSize);
       int cellY = floor(bp.position.y / cellSize);
