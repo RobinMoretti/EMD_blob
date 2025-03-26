@@ -9,11 +9,16 @@ boolean usePixelEffect = true;
 
 PFont interTight;
 float timeToSaveFrameAndStop;
+int minTimeToSaveFrameAndStop = 6;
+int maxTimeToSaveFrameAndStop = 17;
 
-int renderCount = 15;
+String letter = "A";
+int renderCount = 1;
+int saveFrameIntervale = 1 * 1000;
 
 void setup() {
-    size(2000, 2000);
+    println("setup !!!!");
+    size(1000, 1000);
     background(255);
 
     setupCrunchyEffect();
@@ -22,21 +27,33 @@ void setup() {
     interTight = createFont("/Fonts/InterTight-Bold.ttf", 128);
 
     textFont(interTight, 300);
-    textSize(250);
-    //text("Un titre incroyable", width/2 - 300, height/2 + 100);
+    textSize(380);
+    textAlign(CENTER, CENTER);
+    text(letter, width/2, height/2);
     
     // ellipse(width/2, height/2, width-100, height-100);	
     
     // add randomly blobs
-    int randomBlobCount = (int)random(1, 3);
+    int randomBlobCount = (int)random(1, 4);
 
     for(int i = 0; i < randomBlobCount; i++){
         PVector blobPosition = new PVector();
-        // Generate random positions closer to the center
-        float angle = random(TWO_PI);
-        float distance = random(0, width * 0.3); // Limit distance from center
-        blobPosition.x = width/2 + cos(angle) * distance;
-        blobPosition.y = height/2 + sin(angle) * distance;
+        boolean isInside = false;
+        
+        // Keep trying positions until we find one inside the letter
+        while (!isInside) {
+            // Generate random positions within the bounds of the text
+            float angle = random(TWO_PI);
+            float distance = random(0, width * 0.3);
+            blobPosition.x = width/2 + cos(angle) * distance;
+            blobPosition.y = height/2 + sin(angle) * distance;
+            
+            // Check if the pixel at this position is black (part of the text)
+            color pixelColor = get(int(blobPosition.x), int(blobPosition.y));
+            if (brightness(pixelColor) < 128) { // If dark enough, it's part of the letter
+                isInside = true;
+            }
+        }
 
         PVector blobVelocity = PVector.random2D();
         blobVelocity.mult(2);
@@ -45,11 +62,13 @@ void setup() {
     }
 
     // setup radnom time
-    timeToSaveFrameAndStop = random(100 * 1000, 500 * 1000);
+    timeToSaveFrameAndStop = random(minTimeToSaveFrameAndStop * 1000, maxTimeToSaveFrameAndStop * 1000);
     lastTime = millis();
+    lastTimeBis = millis();
 }
 
 long lastTime = 0;
+long lastTimeBis = 0;
 final int FRAME_SKIP = 2; // Only update physics every X frames
 
 void draw() {
@@ -74,9 +93,9 @@ void draw() {
     updateCrunchyEffect();
 
     // save frame every 30 seconds
-    if (millis() - lastTime > 30 * 1000) {
+    if (millis() - lastTimeBis > saveFrameIntervale) {
         saveFrame(getFileName());
-        lastTime = millis();
+        lastTimeBis = millis();
     }
 
     // check if we need to save frame and stop
@@ -96,16 +115,19 @@ void draw() {
         noLoop();
         restart();
     }
-
-
-	//saveFrame("output/####.png");
 }
 
 String getFileName() {
-    return "output/" + "render-" + renderCount + "-" + System.currentTimeMillis() + ".tiff";
+    return "output/" + "render-" + letter + "-" + renderCount + "-" + System.currentTimeMillis() + ".tiff";
 }
 void restart(){
     renderCount++;
+    
+    if(renderCount > 5){
+        renderCount = 1;
+        // get next letter in the alphabet
+        letter = Character.toString((char)(letter.charAt(0) + 1));
+    }
     background(255);
     blobs.clear();
     otherBodyParts.clear();
