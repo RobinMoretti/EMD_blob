@@ -8,9 +8,12 @@ int opacityCount = 0;
 boolean usePixelEffect = true;
 
 PFont interTight;
+float timeToSaveFrameAndStop;
+
+int renderCount = 15;
 
 void setup() {
-    size(800, 1200);
+    size(2000, 2000);
     background(255);
 
     setupCrunchyEffect();
@@ -20,9 +23,30 @@ void setup() {
 
     textFont(interTight, 300);
     textSize(250);
-    text("Un titre incroyable", width/2 - 300, height/2 + 100);
+    //text("Un titre incroyable", width/2 - 300, height/2 + 100);
     
     // ellipse(width/2, height/2, width-100, height-100);	
+    
+    // add randomly blobs
+    int randomBlobCount = (int)random(1, 3);
+
+    for(int i = 0; i < randomBlobCount; i++){
+        PVector blobPosition = new PVector();
+        // Generate random positions closer to the center
+        float angle = random(TWO_PI);
+        float distance = random(0, width * 0.3); // Limit distance from center
+        blobPosition.x = width/2 + cos(angle) * distance;
+        blobPosition.y = height/2 + sin(angle) * distance;
+
+        PVector blobVelocity = PVector.random2D();
+        blobVelocity.mult(2);
+
+        blobs.add(new BlobObject(blobPosition, blobVelocity, null));
+    }
+
+    // setup radnom time
+    timeToSaveFrameAndStop = random(100 * 1000, 500 * 1000);
+    lastTime = millis();
 }
 
 long lastTime = 0;
@@ -48,7 +72,46 @@ void draw() {
     // }
 
     updateCrunchyEffect();
-	saveFrame("output/####.png");
+
+    // save frame every 30 seconds
+    if (millis() - lastTime > 30 * 1000) {
+        saveFrame(getFileName());
+        lastTime = millis();
+    }
+
+    // check if we need to save frame and stop
+    //filter blobs by speed 0
+    boolean allStopped = true;
+
+    for (BlobObject blob : blobs) {
+        if (blob.velocity.mag() > 0) {
+            allStopped = false;
+            break;
+        }
+    }
+
+
+    if (millis() - lastTime > timeToSaveFrameAndStop || allStopped) {
+        saveFrame(getFileName());
+        noLoop();
+        restart();
+    }
+
+
+	//saveFrame("output/####.png");
+}
+
+String getFileName() {
+    return "output/" + "render-" + renderCount + "-" + System.currentTimeMillis() + ".tiff";
+}
+void restart(){
+    renderCount++;
+    background(255);
+    blobs.clear();
+    otherBodyParts.clear();
+    grid.clear();
+    setup();
+    loop();
 }
 
 void mousePressed() {

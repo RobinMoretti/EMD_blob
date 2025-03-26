@@ -125,28 +125,28 @@ void updateCrunchyEffect() {
   image(buffer, 0, 0);
   
   // Add scanlines for extra crunch - only near influence points
-  if (frameCount % 2 == 0) {  // Every other frame
-    stroke(0, 5);
-    for (int y = 0; y < height; y += 3) {
-      boolean drawLine = false;
-      float lineStartX = width;
-      float lineEndX = 0;
-      
-      for (int i = 0; i < blobs.size(); i++) {
-		if(blobs.get(i).lifeSpan <= 0) continue;
-		float scanlineRadius = blobs.get(i).size * 1.2;
-		if (abs(y - blobs.get(i).position.y) < scanlineRadius) {
-			drawLine = true;
-			lineStartX = min(lineStartX, max(0, blobs.get(i).position.x - scanlineRadius));
-			lineEndX = max(lineEndX, min(width, blobs.get(i).position.x + scanlineRadius));
+	if (frameCount % 2 == 0) {  // Every other frame
+		stroke(0, 1);  // Very light opacity for subtle effect
+		for (int y = 0; y < height; y += 1) {  // Every pixel row for fine dithering
+			boolean drawLine = false;
+			float lineStartX = width;
+			float lineEndX = 0;
+			
+			for (int i = 0; i < blobs.size(); i++) {
+				if(blobs.get(i).lifeSpan <= 0) continue;
+				float scanlineRadius = blobs.get(i).size * 1.2;
+				if (abs(y - blobs.get(i).position.y) < scanlineRadius) {
+					drawLine = true;
+					lineStartX = min(lineStartX, max(0, blobs.get(i).position.x - scanlineRadius));
+					lineEndX = max(lineEndX, min(width, blobs.get(i).position.x + scanlineRadius));
+				}
+			}
+			
+			if (drawLine) {
+				line(lineStartX, y, lineEndX, y);
+			}
 		}
-      }
-      
-      if (drawLine) {
-        line(lineStartX, y, lineEndX, y);
-      }
-    }
-  }
+	}
 }
 
 // Toggle the effect with 'c' key and adjust parameters with number keys
