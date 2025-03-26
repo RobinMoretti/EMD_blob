@@ -124,37 +124,61 @@ void updateCrunchyEffect() {
 	buffer.updatePixels();
 	image(buffer, 0, 0);
   
+	// if (frameCount % 2 == 0) {  // Every other frame
+	// 	// Add noise pixels around blobs
+	// 	loadPixels();
+	// 	for (int i = 0; i < blobs.size(); i++) {
+	// 		if (blobs.get(i).lifeSpan <= 0) continue;
+			
+	// 		float noiseRadius = blobs.get(i).size * 1.5;
+	// 		int noiseCount = (int)(blobs.get(i).size * 0.25); // Reduced from 0.5 to 0.25
+			
+	// 		for (int j = 0; j < noiseCount; j++) {
+	// 			float angle = random(TWO_PI);
+	// 			float distance = random(blobs.get(i).size * 0.7, noiseRadius);
+				
+	// 			int nx = constrain((int)(blobs.get(i).position.x + cos(angle) * distance), 0, width-1);
+	// 			int ny = constrain((int)(blobs.get(i).position.y + sin(angle) * distance), 0, height-1);
+				
+	// 			if (random(1) < 0.6) { // Reduced from 0.8 to 0.6
+	// 				int greyValue = (int)random(20, 120);
+					
+	// 				// Calculate opacity based on distance
+	// 				float normalizedDistance = (distance - blobs.get(i).size * 0.7) / (noiseRadius - blobs.get(i).size * 0.7);
+	// 				int alpha = (int)(255 * (1.0 - normalizedDistance));
+					
+	// 				// Get the current pixel color and blend with the noise
+	// 				color currentColor = pixels[nx + ny * width];
+	// 				color noiseColor = color(greyValue, alpha);
+	// 				pixels[nx + ny * width] = blendColor(currentColor, noiseColor, BLEND);
+	// 			}
+	// 		}
+	// 	}
+	// 	updatePixels();
+	// }
+
+	
 	if (frameCount % 2 == 0) {  // Every other frame
-		// Add noise pixels around blobs
-		loadPixels();
-		for (int i = 0; i < blobs.size(); i++) {
-			if (blobs.get(i).lifeSpan <= 0) continue;
+		stroke(0, 1);  // Very light opacity for subtle effect
+		for (int y = 0; y < height; y += 1) {  // Every pixel row for fine dithering
+			boolean drawLine = false;
+			float lineStartX = width;
+			float lineEndX = 0;
 			
-			float noiseRadius = blobs.get(i).size * 1.5;
-			int noiseCount = (int)(blobs.get(i).size * 0.25); // Reduced from 0.5 to 0.25
-			
-			for (int j = 0; j < noiseCount; j++) {
-				float angle = random(TWO_PI);
-				float distance = random(blobs.get(i).size * 0.7, noiseRadius);
-				
-				int nx = constrain((int)(blobs.get(i).position.x + cos(angle) * distance), 0, width-1);
-				int ny = constrain((int)(blobs.get(i).position.y + sin(angle) * distance), 0, height-1);
-				
-				if (random(1) < 0.6) { // Reduced from 0.8 to 0.6
-					int greyValue = (int)random(20, 120);
-					
-					// Calculate opacity based on distance
-					float normalizedDistance = (distance - blobs.get(i).size * 0.7) / (noiseRadius - blobs.get(i).size * 0.7);
-					int alpha = (int)(255 * (1.0 - normalizedDistance));
-					
-					// Get the current pixel color and blend with the noise
-					color currentColor = pixels[nx + ny * width];
-					color noiseColor = color(greyValue, alpha);
-					pixels[nx + ny * width] = blendColor(currentColor, noiseColor, BLEND);
+			for (int i = 0; i < blobs.size(); i++) {
+				if(blobs.get(i).lifeSpan <= 0) continue;
+				float scanlineRadius = blobs.get(i).size * 1.2;
+				if (abs(y - blobs.get(i).position.y) < scanlineRadius) {
+					drawLine = true;
+					lineStartX = min(lineStartX, max(0, blobs.get(i).position.x - scanlineRadius));
+					lineEndX = max(lineEndX, min(width, blobs.get(i).position.x + scanlineRadius));
 				}
 			}
+			
+			if (drawLine) {
+				line(lineStartX, y, lineEndX, y);
+			}
 		}
-		updatePixels();
 	}
 }
 
